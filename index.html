@@ -136,6 +136,48 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
 /* Kontakt */
 #kontakt { scroll-margin-top: 20px; }
 .contact-other { display: grid; gap: 10px; min-height: 120px; align-content: center; padding: 16px; border: 3px dashed #B5AC97; margin-bottom: 8px; }
+.offer-text { margin: 0; font-size: 24px; }
+.btn--big { font-size: 13px; padding: 14px 20px; background: #4F8D27; justify-self: start; }
+.btn--big:hover, .btn--big:focus-visible { background: #5DA130; }
+.btn--grey { background: var(--stone); }
+.offer-thanks { margin: 0; font-family: var(--f-pixel); font-size: 11px; color: #2F6B12; line-height: 1.6; }
+
+/* Angebots-Fenster */
+.offer { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 4px solid var(--ink); background: var(--paper); color: var(--ink); box-shadow: 10px 10px 0 rgba(30,27,22,.5); overflow: auto; }
+.offer::backdrop { background: rgba(30, 27, 22, .6); }
+.offer[open] { animation: rise .35s steps(4) both; }
+.offer-form { display: grid; gap: 16px; padding: 20px; }
+.offer-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: -20px -20px 0; padding: 14px 20px; background-color: var(--plank); background-size: 32px 32px; image-rendering: pixelated; border-bottom: 4px solid var(--ink); }
+.offer-head h2 { margin: 0; font-family: var(--f-pixel); font-size: 15px; color: var(--paper); text-shadow: 2px 2px 0 var(--ink); }
+.x { font-family: var(--f-pixel); font-size: 12px; width: 34px; height: 34px; background: #B83A2E; color: var(--paper); border: 3px solid var(--ink); cursor: pointer; }
+.x:focus-visible { outline: 3px solid var(--paper); outline-offset: 2px; }
+.offer label { display: grid; gap: 8px; font-family: var(--f-pixel); font-size: 11px; letter-spacing: .12em; word-spacing: .2em; line-height: 1.8; }
+.offer input[type="text"], .offer textarea { font-family: var(--f-body); font-size: 24px; letter-spacing: .06em; word-spacing: .15em; line-height: 1.25; color: var(--ink); background: #FFFDF6; border: 3px solid var(--ink); border-radius: 0; padding: 6px 10px; width: 100%; box-shadow: inset 3px 3px 0 rgba(0,0,0,.12); }
+.offer input[type="file"] { font-family: var(--f-body); font-size: 22px; letter-spacing: .05em; max-width: 100%; color: var(--ink); }
+.offer input[type="file"]::file-selector-button {
+  font-family: var(--f-pixel); font-size: 10px; letter-spacing: .08em; color: var(--paper);
+  margin-right: 12px; padding: 10px 14px; cursor: pointer;
+  background: var(--stone); border: 3px solid var(--ink); border-radius: 0;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.35), inset 3px 3px 0 rgba(255,255,255,.3);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+.offer input[type="file"]::file-selector-button:hover { background: #8F9DD8; }
+.offer input[type="file"]::-webkit-file-upload-button {
+  font-family: var(--f-pixel); font-size: 10px; letter-spacing: .08em; color: var(--paper);
+  margin-right: 12px; padding: 10px 14px; cursor: pointer;
+  background: var(--stone); border: 3px solid var(--ink); border-radius: 0;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.35), inset 3px 3px 0 rgba(255,255,255,.3);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+.offer input:focus-visible, .offer textarea:focus-visible { outline: 3px solid #4F8D27; outline-offset: 1px; }
+.offer .hint { font-family: var(--f-body); font-size: 20px; color: #6B6355; letter-spacing: .05em; word-spacing: .1em; }
+.offer .btn { letter-spacing: .08em; }
+.offer-head h2 { letter-spacing: .1em; }
+.o-error { letter-spacing: .04em; }
+.o-preview { max-width: 100%; max-height: 180px; border: 3px solid var(--ink); justify-self: start; }
+.o-error { margin: 0; color: #A02A1F; font-size: 20px; }
+.offer-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .mail-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
 .mail { font-family: var(--f-pixel); font-size: clamp(12px, 2vw, 18px); color: var(--ink); overflow-wrap: anywhere; user-select: all; }
 .mail:hover, .mail:focus-visible { color: #3E5BB8; }
@@ -253,9 +295,10 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
 
   <section class="slot" id="kontakt">
     <span class="slot-label">KONTAKT</span>
-    <div class="contact-other" aria-label="Weitere Kontaktmöglichkeit">
-      <div class="ghost"></div>
-      <div class="ghost mid"></div>
+    <div class="contact-other">
+      <p class="offer-text">Sie haben ein Bauprojekt? Beschreiben Sie es uns und nennen Sie Ihren Preis.</p>
+      <button class="btn btn--big" type="button" id="open-offer">Angebot machen</button>
+      <p class="offer-thanks" id="offer-thanks" hidden>Danke! Ihr Angebot ist beim Chef angekommen.</p>
     </div>
     <h2>oder schreiben Sie unserem Chef</h2>
     <div class="mail-row">
@@ -264,6 +307,44 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
     </div>
   </section>
 </div>
+
+<dialog class="offer" id="offer-dialog" aria-labelledby="offer-title">
+  <form class="offer-form" id="offer-form" method="POST" enctype="multipart/form-data" action="">
+    <div class="offer-head">
+      <h2 id="offer-title">Angebot machen</h2>
+      <button class="x" type="button" id="close-offer" aria-label="Fenster schließen">X</button>
+    </div>
+
+    <input type="hidden" name="_subject" value="Neues Angebot über fettiundcokg.github.io">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="_next" value="https://fettiundcokg.github.io/#danke">
+    <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+    <label for="o-name">Ihr Name
+      <input id="o-name" name="Name" type="text" autocomplete="name" required maxlength="80">
+    </label>
+
+    <label for="o-bild">Bild von Ihrem Projekt
+      <input id="o-bild" name="attachment" type="file" accept="image/*">
+      <span class="hint">Optional, höchstens 5 MB</span>
+    </label>
+    <img class="o-preview" id="o-preview" alt="Vorschau des ausgewählten Bildes" hidden>
+
+    <label for="o-text">Beschreibung
+      <textarea id="o-text" name="Beschreibung" rows="4" required maxlength="2000" placeholder="z. B. Eine Brücke über die Schlucht hinter meinem Haus, ca. 40 Blöcke lang"></textarea>
+    </label>
+
+    <label for="o-preis">Ihr Angebot
+      <span class="price"><input id="o-preis" name="Angebot" type="text" inputmode="decimal" required maxlength="40" placeholder="z. B. 10 Diamantblöcke"></span>
+    </label>
+
+    <p class="o-error" id="o-error" hidden></p>
+    <div class="offer-actions">
+      <button class="btn btn--big" type="submit" id="o-send">Abschicken</button>
+      <button class="btn btn--grey" type="button" id="o-cancel">Abbrechen</button>
+    </div>
+  </form>
+</dialog>
 
 <footer class="ground" aria-label="Fußzeile">
   <div class="grass" id="grass"></div>
@@ -454,6 +535,60 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
   else document.addEventListener('visibilitychange', function once() {
     if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', once); go(); }
   });
+})();
+</script>
+<script>
+(function () {
+  var MAIL = 'cheffe-davon@gmx.de';
+  var LIVE = location.hostname === 'fettiundcokg.github.io';
+  var dlg = document.getElementById('offer-dialog');
+  var form = document.getElementById('offer-form');
+  var file = document.getElementById('o-bild');
+  var prev = document.getElementById('o-preview');
+  var err = document.getElementById('o-error');
+  var thanks = document.getElementById('offer-thanks');
+
+  // Holzbohlen-Textur für den Fensterkopf übernehmen
+  var top = document.getElementById('topbar');
+  document.querySelector('.offer-head').style.backgroundImage = top.style.backgroundImage;
+
+  function open() { err.hidden = true; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); document.getElementById('o-name').focus(); }
+  function close() { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }
+  document.getElementById('open-offer').addEventListener('click', open);
+  document.getElementById('close-offer').addEventListener('click', close);
+  document.getElementById('o-cancel').addEventListener('click', close);
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) close(); });
+
+  file.addEventListener('change', function () {
+    var f = file.files && file.files[0];
+    err.hidden = true;
+    if (!f) { prev.hidden = true; return; }
+    if (f.size > 5 * 1024 * 1024) { err.textContent = 'Das Bild ist größer als 5 MB. Bitte ein kleineres Bild wählen.'; err.hidden = false; file.value = ''; prev.hidden = true; return; }
+    var r = new FileReader();
+    r.onload = function () { prev.src = r.result; prev.hidden = false; };
+    r.readAsDataURL(f);
+  });
+
+  form.addEventListener('submit', function (e) {
+    if (!form.checkValidity()) { e.preventDefault(); form.reportValidity(); return; }
+    if (!LIVE) {
+      // In der Vorschau wird nichts verschickt, nur auf der echten Website
+      e.preventDefault();
+      err.textContent = 'Vorschau: Abschicken funktioniert nur auf fettiundcokg.github.io.';
+      err.hidden = false;
+      return;
+    }
+    form.action = 'https://formsubmit.co/' + MAIL;
+    var btn = document.getElementById('o-send');
+    btn.textContent = 'Wird gesendet …'; btn.disabled = true;
+  });
+
+  // Nach dem Abschicken leitet FormSubmit zurück auf #danke
+  if (location.hash === '#danke') {
+    thanks.hidden = false;
+    var k = document.getElementById('kontakt');
+    if (k) k.scrollIntoView();
+  }
 })();
 </script>
 <script>
