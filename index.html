@@ -655,6 +655,50 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
 })();
 </script>
 <script>
+// Gemeinsames Abschicken über FormSubmit (AJAX, ohne Weiterleitung)
+window.fcSend = function (form, btn, err, onOk) {
+  var MAIL = 'cheffe-davon@gmx.de';
+  var URL = 'https://formsubmit.co/ajax/' + MAIL;
+  var label = btn.textContent;
+  function fail(msg) {
+    err.textContent = msg + ' Sie können auch direkt an ' + MAIL + ' schreiben.';
+    err.hidden = false; btn.textContent = label; btn.disabled = false;
+  }
+  function post(data) {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 25000);
+    return fetch(URL, { method: 'POST', body: data, headers: { 'Accept': 'application/json' }, signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { return r.json().catch(function () { return { success: r.ok ? 'true' : 'false', message: 'Antwort ' + r.status }; }); })
+      .finally(function () { clearTimeout(timer); });
+  }
+  function ok(res) { return res && (res.success === true || res.success === 'true'); }
+
+  err.hidden = true; btn.textContent = 'Wird gesendet …'; btn.disabled = true;
+  var data = new FormData(form);
+  data.delete('_next');
+  var file = form.querySelector('input[type="file"]');
+  var hasFile = file && file.files && file.files.length > 0;
+
+  post(data).then(function (res) {
+    if (ok(res)) return { res: res, noImage: false };
+    // Falls es am Bild liegt: noch einmal ohne Bild versuchen
+    if (hasFile) {
+      var d2 = new FormData(form); d2.delete('_next'); d2.delete(file.name);
+      d2.append('Hinweis', 'Bild konnte nicht mitgeschickt werden');
+      return post(d2).then(function (r2) { return { res: r2, noImage: true }; });
+    }
+    return { res: res, noImage: false };
+  }).then(function (out) {
+    if (ok(out.res)) { btn.textContent = label; btn.disabled = false; form.reset(); onOk(out.noImage); return; }
+    var m = (out.res && out.res.message) || '';
+    if (/activ/i.test(m)) fail('Das Formular ist noch nicht freigeschaltet. Der Chef muss erst die Bestätigungsmail von FormSubmit in seinem Postfach anklicken.');
+    else fail('Das hat leider nicht geklappt' + (m ? ' (' + m + ')' : '') + '.');
+  }).catch(function (e) {
+    fail(e && e.name === 'AbortError' ? 'Der Mail-Dienst antwortet gerade nicht.' : 'Der Mail-Dienst ist gerade nicht erreichbar.');
+  });
+};
+</script>
+<script>
 (function () {
   var MAIL = 'cheffe-davon@gmx.de';
   var LIVE = location.hostname === 'fettiundcokg.github.io';
@@ -695,9 +739,12 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
       err.hidden = false;
       return;
     }
-    form.action = 'https://formsubmit.co/' + MAIL;
-    var btn = document.getElementById('o-send');
-    btn.textContent = 'Wird gesendet …'; btn.disabled = true;
+    e.preventDefault();
+    fcSend(form, document.getElementById('o-send'), err, function (noImage) {
+      close(); prev.hidden = true;
+      thanks.textContent = noImage ? 'Danke! Ihr Angebot ist angekommen, das Bild leider nicht. Schicken Sie es gern per Mail nach.' : 'Danke! Ihr Angebot ist beim Chef angekommen.';
+      thanks.hidden = false;
+    });
   });
 
   // Nach dem Abschicken leitet FormSubmit zurück auf #danke
@@ -748,9 +795,11 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
       err.hidden = false;
       return;
     }
-    form.action = 'https://formsubmit.co/' + MAIL;
-    var btn = document.getElementById('r-send');
-    btn.textContent = 'Wird gesendet …'; btn.disabled = true;
+    e.preventDefault();
+    fcSend(form, document.getElementById('r-send'), err, function () {
+      close(); paint(0);
+      document.getElementById('review-thanks').hidden = false;
+    });
   });
 
   if (location.hash === '#bewertet') {
