@@ -728,10 +728,12 @@ try { if (localStorage.getItem('fc-dark') === '1') document.documentElement.clas
   <!-- KARTE-DATEN: Hier stehen die Projekte der Karte. Im Bearbeitungsmodus (Adresse mit #karte-bearbeiten) erzeugen und hier einfügen. -->
   <script type="application/json" id="karte-daten">
 [
-  {"name": "Weg vom Bauernhof nach Cyclopic", "typ": "weg", "punkte": [[821, -1511], [170, -559]], "beschreibung": "Unser Holzweg mit Brücken über die Schluchten.", "projekt": 1},
-  {"name": "Bauernhof", "typ": "punkt", "punkte": [[821, -1511]], "beschreibung": "Startpunkt des Weges (Y 136).", "projekt": 1},
-  {"name": "Cyclopic", "typ": "punkt", "punkte": [[170, -559]], "beschreibung": "Ziel des Weges.", "projekt": 1},
-  {"name": "Tunnel zur Guardian Farm", "typ": "weg", "punkte": [[-5584, 772], [-5497, 772]], "beschreibung": "Gerader Tunnel mit innovativer Riptide-Technologie.", "projekt": 2}
+  {"name": "Fetti & Co. KG Headquarter", "typ": "punkt", "punkte": [[-271, -2797]], "beschreibung": "Unser Firmensitz (Y 63).", "projekt": 0, "symbol": "kran"},
+  {"name": "Weg vom Bauernhof nach Cyclopic", "typ": "weg", "punkte": [[368, -868], [390, -872], [390, -900], [438, -903], [468, -918], [466, -982], [490, -982], [526, -1018], [570, -1064], [588, -1069], [636, -1116], [654, -1145], [658, -1186], [658, -1218], [688, -1240], [742, -1299], [742, -1453]], "bruecken": [7, 11, 15], "beschreibung": "Unser Holzweg mit drei Brücken über Flüsse und Schluchten. Beginnt bei X 368 / Z -868.", "projekt": 1},
+  {"name": "Bauernhof", "typ": "punkt", "punkte": [[821, -1511]], "beschreibung": "Ende des Weges (Y 136).", "projekt": 1},
+  {"name": "Cyclopic", "typ": "punkt", "punkte": [[170, -559]], "beschreibung": "Hier geht es zum Weg Richtung Bauernhof.", "projekt": 1},
+  {"name": "Tunnel zur Guardian Farm", "typ": "weg", "punkte": [[-5584, 772], [-5497, 772]], "beschreibung": "Gerader Tunnel mit innovativer Riptide-Technologie.", "projekt": 2},
+  {"name": "Schachturm", "typ": "punkt", "punkte": [[-173, 164]], "beschreibung": "Projekt bei Y 94.", "projekt": 0, "symbol": "turm"}
 ]
   </script>
 
@@ -1891,17 +1893,43 @@ window.fcSend = function (form, btn, err, onOk) {
     cv.style.height = H + 'px'; cv.width = W * dpr; cv.height = H * dpr;
   }
 
-  // Pergament-Hintergrund wie eine Minecraft-Karte (fest gemustert, bewegt sich mit)
-  function rand(i, j) { var n = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return n - Math.floor(n); }
+  // Kartenpapier: ruhiges Pergament mit feiner Körnung, ein paar weichen Flecken und dunklerem Rand.
+  // Wird einmal pro Größe/Modus vorgezeichnet und bleibt beim Verschieben stehen (nur Raster und Inhalte bewegen sich).
+  var paper = null, paperKey = '';
+  function rnd(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+  function makePaper(night) {
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
+    var g = c.getContext('2d'), r = rnd(4242);
+    var base = night ? [62, 58, 72] : [233, 216, 172];
+    g.fillStyle = 'rgb(' + base.join(',') + ')'; g.fillRect(0, 0, W, H);
+    // weiche Flecken (Alterung)
+    for (var i = 0; i < 18; i++) {
+      var x = r() * W, y = r() * H, rad = 40 + r() * 140;
+      var gr = g.createRadialGradient(x, y, 0, x, y, rad);
+      var d = night ? 'rgba(20,18,30,' : 'rgba(150,110,60,';
+      gr.addColorStop(0, d + (0.05 + r() * 0.06) + ')'); gr.addColorStop(1, d + '0)');
+      g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    }
+    // feine Pixel-Körnung (2 px), sehr dezent
+    for (var y2 = 0; y2 < H; y2 += 2) for (var x2 = 0; x2 < W; x2 += 2) {
+      var v = r();
+      if (v < 0.10) { g.fillStyle = night ? 'rgba(0,0,0,.10)' : 'rgba(120,85,40,.08)'; g.fillRect(x2, y2, 2, 2); }
+      else if (v > 0.93) { g.fillStyle = night ? 'rgba(255,255,255,.035)' : 'rgba(255,250,235,.22)'; g.fillRect(x2, y2, 2, 2); }
+    }
+    // ein paar Papierfasern
+    g.fillStyle = night ? 'rgba(255,255,255,.03)' : 'rgba(120,85,40,.07)';
+    for (i = 0; i < 70; i++) { var fx = r() * W, fy = r() * H, len = 6 + r() * 18; if (r() < .5) g.fillRect(fx, fy, len, 1); else g.fillRect(fx, fy, 1, len); }
+    // dunklerer Rand wie bei einer gezeichneten Karte
+    var vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, night ? 'rgba(0,0,0,.45)' : 'rgba(110,70,30,.30)');
+    g.fillStyle = vg; g.fillRect(0, 0, W, H);
+    return c;
+  }
   function draw() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
-    var night = isDark();
-    var cell = 8, ox = ((-view.cx * view.s + W / 2) % cell + cell) % cell, oz = ((-view.cz * view.s + H / 2) % cell + cell) % cell;
-    var baseCols = night ? ['#4B4232', '#463E2F', '#504636', '#423A2C'] : ['#E2CB95', '#DBC28A', '#E8D3A2', '#D4BA80'];
-    for (var y = -cell; y < H + cell; y += cell) for (var x = -cell; x < W + cell; x += cell) {
-      var gi = Math.floor((x - ox) / cell + view.cx * view.s / cell), gj = Math.floor((y - oz) / cell + view.cz * view.s / cell);
-      ctx.fillStyle = baseCols[Math.floor(rand(gi, gj) * 4)]; ctx.fillRect(x + ox, y + oz, cell, cell);
-    }
+    var night = isDark(), key = W + 'x' + H + (night ? 'n' : 'd');
+    if (paperKey !== key) { paper = makePaper(night); paperKey = key; }
+    ctx.drawImage(paper, 0, 0, W, H);
     // Gelände-Kacheln
     if (tiles) {
       Object.keys(tiles.regions).forEach(function (key) {
@@ -1927,7 +1955,7 @@ window.fcSend = function (form, btn, err, onOk) {
       else ctx.fillStyle = night ? 'rgba(255,240,200,.55)' : 'rgba(70,45,20,.7)';
       ctx.fillText(t, x, y); ctx.restore();
     }
-    ctx.fillStyle = tiles ? 'rgba(30,27,22,.25)' : (night ? 'rgba(255,240,200,.12)' : 'rgba(90,60,30,.22)');
+    ctx.fillStyle = tiles ? 'rgba(30,27,22,.25)' : (night ? 'rgba(255,240,200,.10)' : 'rgba(110,75,35,.16)');
     for (var gx = Math.ceil(wx(0) / step) * step; gx <= wx(W); gx += step) {
       var px = Math.round(sx(gx)); ctx.fillRect(px, 0, 2, H);
       tick('X ' + gx, px + 4, 6);
@@ -1943,12 +1971,14 @@ window.fcSend = function (form, btn, err, onOk) {
     label('Spawn', spx, spz + 12, false, true);
 
     // Wege zuerst, dann Punkte
-    data.forEach(function (e, k) { if (e.typ === 'weg' && (e.punkte || []).length > 1) drawWay(e.punkte, k === sel); });
+    data.forEach(function (e, k) { if (e.typ === 'weg' && (e.punkte || []).length > 1) drawWay(e.punkte, k === sel, e.bruecken); });
     if (wayPts && wayPts.length) drawWay(wayPts, true);
     data.forEach(function (e, k) {
       var p = e.punkte || []; if (!p.length) return;
       if (e.typ === 'weg') { endCap(p[0]); endCap(p[p.length - 1]); var m = p[Math.floor((p.length - 1) / 2)], n = p[Math.ceil((p.length - 1) / 2)]; label(e.name, sx((m[0] + n[0]) / 2), sz((m[1] + n[1]) / 2) - 14, k === sel); }
-      else { pin(sx(p[0][0]), sz(p[0][1]), k === sel); label(e.name, sx(p[0][0]), sz(p[0][1]) - 30, k === sel); }
+      else if (e.symbol === 'turm') { rookIcon(sx(p[0][0]), sz(p[0][1]), k === sel); label(e.name, sx(p[0][0]), sz(p[0][1]) - 56, k === sel); }
+      else if (e.symbol === 'kran') { craneIcon(sx(p[0][0]), sz(p[0][1]), k === sel); label(e.name, sx(p[0][0]), sz(p[0][1]) - 48, k === sel); }
+      else { pin(sx(p[0][0]), sz(p[0][1]), k === sel, e.farbe); label(e.name, sx(p[0][0]), sz(p[0][1]) - 30, k === sel); }
     });
     // Kompass
     var cxp = W - 30, cyp = H - 34;
@@ -1956,17 +1986,76 @@ window.fcSend = function (form, btn, err, onOk) {
     ctx.fillStyle = '#E5332A'; ctx.fillRect(cxp - 2, cyp - 12, 4, 10); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(cxp - 2, cyp - 2, 4, 10);
     ctx.fillStyle = '#FFFFFF'; ctx.font = '8px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.fillText('N', cxp, cyp - 28 + 2); ctx.textAlign = 'left';
   }
-  function drawWay(pts, hi) {
+  // Brückentextur: Holzbohlen quer zur Fahrtrichtung, dunkle Geländer an beiden Seiten
+  var plank = document.createElement('canvas'); plank.width = 8; plank.height = 8;
+  (function () { var q = plank.getContext('2d');
+    ['#A87D48', '#9C7442', '#B38653', '#93693B'].forEach(function (c, i) { q.fillStyle = c; q.fillRect(i * 2, 0, 2, 8); });
+    q.fillStyle = '#6E4E26'; q.fillRect(7, 0, 1, 8); q.fillRect(3, 0, 1, 8); })();
+  function drawBridge(a, b, hi) {
+    var x1 = sx(a[0]), y1 = sz(a[1]), x2 = sx(b[0]), y2 = sz(b[1]), L = Math.hypot(x2 - x1, y2 - y1);
+    if (L < 1) return;
+    var w = Math.max(9, Math.min(16, 9 + view.s * 2));
+    ctx.save(); ctx.translate(x1, y1); ctx.rotate(Math.atan2(y2 - y1, x2 - x1));
+    ctx.fillStyle = '#1E1B16'; ctx.fillRect(-3, -w / 2 - 3, L + 6, w + 6);
+    ctx.fillStyle = ctx.createPattern(plank, 'repeat'); ctx.fillRect(-1, -w / 2, L + 2, w);
+    ctx.fillStyle = hi ? '#FFD23F' : '#4A3220';
+    ctx.fillRect(-1, -w / 2 - 2, L + 2, 2); ctx.fillRect(-1, w / 2, L + 2, 2);
+    for (var t = 0; t <= L; t += 8) { ctx.fillRect(t, -w / 2 - 3, 2, 3); ctx.fillRect(t, w / 2, 2, 3); }
+    ctx.restore();
+  }
+  function drawWay(pts, hi, bridges) {
+    drawPath(pts, hi);
+    (bridges || []).forEach(function (i) { if (pts[i] && pts[i + 1]) drawBridge(pts[i], pts[i + 1], hi); });
+  }
+  function drawPath(pts, hi) {
     ctx.lineJoin = 'round'; ctx.lineCap = 'square';
     ctx.beginPath(); pts.forEach(function (p, i) { var a = sx(p[0]), b = sz(p[1]); if (i) ctx.lineTo(a, b); else ctx.moveTo(a, b); });
     ctx.strokeStyle = '#1E1B16'; ctx.lineWidth = hi ? 10 : 8; ctx.setLineDash([]); ctx.stroke();
     ctx.strokeStyle = hi ? '#FFD23F' : '#E08A2E'; ctx.lineWidth = hi ? 5 : 4; ctx.setLineDash([10, 6]); ctx.stroke(); ctx.setLineDash([]);
   }
   function endCap(p) { var a = Math.round(sx(p[0])), b = Math.round(sz(p[1])); ctx.fillStyle = '#1E1B16'; ctx.fillRect(a - 6, b - 6, 12, 12); ctx.fillStyle = '#E08A2E'; ctx.fillRect(a - 4, b - 4, 8, 8); }
-  function pin(a, b, hi) {
+  // Pixel-Schachturm mit Fahne
+  function rookIcon(a, b, hi) {
+    a = Math.round(a); b = Math.round(b);
+    var K = '#1E1B16', L = hi ? '#FFFFFF' : '#E6E2D6', S = '#B9B3A3';
+    ctx.fillStyle = K;
+    ctx.fillRect(a - 10, b - 4, 20, 5);   // Fuß
+    ctx.fillRect(a - 7, b - 20, 14, 17);  // Körper
+    ctx.fillRect(a - 9, b - 26, 18, 7);   // Krone
+    ctx.fillStyle = L;
+    ctx.fillRect(a - 9, b - 3, 18, 3);
+    ctx.fillRect(a - 6, b - 19, 12, 16);
+    ctx.fillRect(a - 8, b - 25, 16, 5);
+    ctx.fillStyle = K;                     // Zinnen-Lücken
+    ctx.fillRect(a - 4, b - 26, 2, 3); ctx.fillRect(a + 2, b - 26, 2, 3);
+    ctx.fillStyle = S; ctx.fillRect(a + 2, b - 19, 4, 16); ctx.fillRect(a - 6, b - 13, 12, 1);
+    ctx.fillStyle = K; ctx.fillRect(a - 1, b - 40, 2, 15);   // Fahnenstange
+    ctx.fillStyle = K; ctx.fillRect(a, b - 41, 12, 8);
+    ctx.fillStyle = '#E5332A'; ctx.fillRect(a + 1, b - 40, 10, 6);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(a - 9, b + 1, 18, 2);
+  }
+  // kleiner Pixel-Kran als Symbol (z. B. fürs Headquarter)
+  function craneIcon(a, b, hi) {
+    a = Math.round(a); b = Math.round(b);
+    var Y = hi ? '#FFFFFF' : '#F2C12E', K = '#1E1B16';
+    ctx.fillStyle = K;
+    ctx.fillRect(a - 6, b - 32, 6, 32);          // Turm (Umriss)
+    ctx.fillRect(a - 12, b - 34, 28, 6);         // Ausleger (Umriss)
+    ctx.fillRect(a - 10, b - 2, 14, 4);          // Fundament
+    ctx.fillStyle = Y;
+    ctx.fillRect(a - 5, b - 31, 4, 30);
+    ctx.fillRect(a - 11, b - 33, 26, 4);
+    ctx.fillStyle = K;                            // Streben im Turm
+    for (var i = 0; i < 4; i++) ctx.fillRect(a - 5, b - 27 + i * 7, 4, 1);
+    ctx.fillStyle = '#7B7B7B'; ctx.fillRect(a - 11, b - 29, 5, 4);   // Gegengewicht
+    ctx.fillStyle = K; ctx.fillRect(a + 11, b - 29, 1, 12);           // Seil
+    ctx.fillRect(a + 9, b - 17, 5, 2); ctx.fillRect(a + 9, b - 17, 2, 4); // Haken
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(a - 9, b + 2, 14, 2);
+  }
+  function pin(a, b, hi, col) {
     a = Math.round(a); b = Math.round(b);
     ctx.fillStyle = '#1E1B16'; ctx.fillRect(a - 2, b - 26, 4, 26); ctx.fillRect(a - 1, b - 28, 18, 14);
-    ctx.fillStyle = hi ? '#FFD23F' : '#E5332A'; ctx.fillRect(a + 1, b - 26, 14, 10);
+    ctx.fillStyle = hi ? '#FFFFFF' : (col || '#E5332A'); ctx.fillRect(a + 1, b - 26, 14, 10);
     ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(a + 1, b - 26, 14, 3);
     ctx.fillStyle = '#9C7442'; ctx.fillRect(a - 1, b - 14, 2, 14);
     ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(a - 5, b - 1, 10, 3);
@@ -1987,7 +2076,7 @@ window.fcSend = function (form, btn, err, onOk) {
       if (e.typ === 'weg') {
         for (var i = 1; i < p.length; i++) { var d = segDist(px, py, sx(p[i-1][0]), sz(p[i-1][1]), sx(p[i][0]), sz(p[i][1])); if (d < 10 && d < bd) { bd = d; best = k; } }
       } else if (p.length) {
-        var dx = px - sx(p[0][0]), dy = py - (sz(p[0][1]) - 14), d2 = Math.sqrt(dx * dx + dy * dy); if (d2 < 20 && d2 < bd) { bd = d2; best = k; }
+        var dx = px - sx(p[0][0]), dy = py - (sz(p[0][1]) - (e.symbol === 'kran' || e.symbol === 'turm' ? 18 : 14)), d2 = Math.sqrt(dx * dx + dy * dy); if (d2 < (e.symbol === 'kran' || e.symbol === 'turm' ? 24 : 20) && d2 < bd) { bd = d2; best = k; }
       }
     });
     return best;
@@ -2046,7 +2135,8 @@ window.fcSend = function (form, btn, err, onOk) {
   function save() { try { localStorage.setItem('fc-karte-entwurf', JSON.stringify(data)); } catch (e) {} }
   function code() {
     return '[\n' + data.map(function (e) {
-      return '  ' + JSON.stringify({ name: e.name, typ: e.typ, punkte: e.punkte, beschreibung: e.beschreibung || '', projekt: +e.projekt || 0 });
+      var o = { name: e.name, typ: e.typ, punkte: e.punkte, beschreibung: e.beschreibung || '', projekt: +e.projekt || 0 }; if (e.farbe) o.farbe = e.farbe; if (e.symbol) o.symbol = e.symbol; if (e.bruecken) o.bruecken = e.bruecken;
+      return '  ' + JSON.stringify(o);
     }).join(',\n') + '\n]';
   }
   function changed() { save(); draw(); showInfo(); renderList(); }
