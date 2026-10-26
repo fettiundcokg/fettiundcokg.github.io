@@ -263,7 +263,7 @@ nav { display: flex; gap: 10px; flex-wrap: wrap; }
   /* Kopfleiste: Name oben, drei gleich breite Knöpfe darunter */
   header.top { margin-top: 12px; padding: 12px; gap: 12px; }
   .logo { font-size: 17px; width: 100%; text-align: center; }
-  nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: 100%; }
+  nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; width: 100%; }
   nav .btn { font-size: 8px; padding: 10px 4px; text-align: center; letter-spacing: 0; line-height: 1.4; }
 
   /* Kästen etwas schlanker */
@@ -661,6 +661,7 @@ try { if (localStorage.getItem('fc-dark') === '1') document.documentElement.clas
     <div class="top-right">
       <nav aria-label="Hauptnavigation">
         <a class="btn" href="#projekte">Unsere Projekte</a>
+        <a class="btn" href="#karte">Projektkarte</a>
         <a class="btn" href="#mitarbeiter">Mitarbeiter</a>
         <a class="btn" href="#kontakt">Kontakt</a>
       </nav>
