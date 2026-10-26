@@ -27,6 +27,7 @@
   --rail: 96px;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: linear-gradient(to bottom,
     var(--sky-1) 0 30%, var(--sky-2) 30% 62%, var(--sky-3) 62% 100%) fixed, var(--sky-1);
@@ -566,6 +567,59 @@ html.dark .ach-reset.confirm { color: #FF7A6B; }
 }
 html.dark .logo-img { background: #17161D; box-shadow: inset 0 -4px 0 rgba(255,255,255,.05), 3px 3px 0 rgba(0,0,0,.6), 0 0 14px rgba(120,140,255,.25); filter: brightness(.9) saturate(.9); }
 @media (max-width: 560px) { .logo { gap: 10px; } .logo-img { height: 40px; padding: 3px 4px 0; border-radius: 9px; border-width: 2px; } }
+
+/* ===== Projektkarte ===== */
+#karte { scroll-margin-top: 20px; }
+.map-wrap { position: relative; border: 4px solid var(--ink); background: #3B2616; box-shadow: inset 0 0 0 4px #6E4E26; }
+.map { display: block; width: 100%; height: auto; touch-action: none; cursor: grab; image-rendering: pixelated; }
+.map.grabbing { cursor: grabbing; }
+.map.adding { cursor: crosshair; }
+.map-ui { position: absolute; right: 10px; top: 10px; display: grid; gap: 6px; }
+.map-btn {
+  width: 36px; height: 36px; padding: 0; cursor: pointer; font-family: var(--f-pixel); font-size: 14px; line-height: 1; color: var(--paper);
+  background: var(--stone); border: 3px solid var(--ink); text-shadow: 2px 2px 0 var(--ink);
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.35), inset 3px 3px 0 rgba(255,255,255,.3);
+}
+.map-btn:hover, .map-btn:focus-visible { background: #8F9DD8; outline: none; }
+.map-btn:focus-visible { outline: 3px solid var(--paper); outline-offset: 2px; }
+.map-coords { position: absolute; left: 10px; bottom: 10px; font-family: var(--f-pixel); font-size: 9px; color: #FFF; background: rgba(30,27,22,.75); padding: 5px 7px; pointer-events: none; }
+.map-coords:empty { display: none; }
+.map-src { margin: 6px 0 0; font-size: 17px; color: #6B6355; }
+.map-src a { color: inherit; }
+html.dark .map-src { color: #A9A08C; }
+.map-info { margin-top: 10px; padding: 12px 14px; background: rgba(30,27,22,.06); border: 3px solid var(--ink); font-size: 21px; line-height: 1.2; min-height: 54px; }
+.map-info b { display: block; font-family: var(--f-pixel); font-size: 11px; font-weight: 400; margin-bottom: 6px; line-height: 1.6; }
+.map-info .mi-coords { font-family: var(--f-pixel); font-size: 9px; color: #6B6355; display: block; margin-bottom: 6px; line-height: 1.7; }
+.map-info .btn { margin-top: 8px; font-size: 9px; }
+html.dark .map-info { background: rgba(255,255,255,.04); }
+html.dark .map-info .mi-coords { color: #A9A08C; }
+
+.map-edit { margin-top: 14px; padding: 14px; border: 3px dashed #B5AC97; display: grid; gap: 12px; }
+html.dark .map-edit { border-color: #4A4538; }
+.map-edit h3 { margin: 0; font-family: var(--f-pixel); font-size: 12px; }
+.map-hint { margin: 0; font-size: 19px; line-height: 1.2; color: #6B6355; }
+html.dark .map-hint { color: #A9A08C; }
+.map-tools, .me-export { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.map-tools .btn.active { background: #4F8D27; }
+.me-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.me-list li { display: grid; gap: 6px; padding: 10px; border: 3px solid var(--ink); background: rgba(30,27,22,.05); }
+html.dark .me-list li { background: rgba(255,255,255,.04); }
+.me-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.me-row label { font-family: var(--f-pixel); font-size: 8px; display: flex; align-items: center; gap: 4px; }
+.me-list input, .me-list textarea, .me-code {
+  font-family: var(--f-body); font-size: 20px; color: var(--ink); background: #FFFDF6; border: 2px solid var(--ink); border-radius: 0; padding: 3px 6px; min-width: 0;
+}
+.me-list input.n { flex: 1 1 200px; }
+.me-list input.c { width: 84px; }
+.me-list input.p { width: 54px; }
+.me-list textarea { width: 100%; resize: vertical; }
+html.dark .me-list input, html.dark .me-list textarea, html.dark .me-code { background: #24222C; color: #ECE6D4; }
+.me-del { font-family: var(--f-pixel); font-size: 8px; color: #FFF; background: #B83A2E; border: 2px solid var(--ink); padding: 6px 8px; cursor: pointer; }
+.me-sel { outline: 3px solid var(--yellow); }
+.me-discard { font-family: var(--f-body); font-size: 19px; background: none; border: 0; text-decoration: underline; color: #6B6355; cursor: pointer; }
+html.dark .me-discard { color: #A9A08C; }
+.me-code { width: 100%; font-size: 16px; resize: vertical; }
+@media (max-width: 560px) { .map-btn { width: 32px; height: 32px; font-size: 12px; } .map-info { font-size: 19px; } }
 </style>
 </head>
 <body>
@@ -637,6 +691,49 @@ try { if (localStorage.getItem('fc-dark') === '1') document.documentElement.clas
       </div>
     </article>
   </section>
+
+  <section class="slot" id="karte">
+    <span class="slot-label">PROJEKTKARTE</span>
+    <h2>Wo wir gebaut haben</h2>
+    <div class="map-wrap">
+      <canvas class="map" id="map" aria-label="Karte der Minecraft-Welt mit unseren Projekten"></canvas>
+      <div class="map-ui">
+        <button class="map-btn" type="button" id="map-in" aria-label="Hineinzoomen">+</button>
+        <button class="map-btn" type="button" id="map-out" aria-label="Herauszoomen">−</button>
+        <button class="map-btn" type="button" id="map-fit" aria-label="Alles zeigen" title="Alles zeigen">⌂</button>
+      </div>
+      <span class="map-coords" id="map-coords"></span>
+    </div>
+    <p class="map-src">Gelände live von der <a href="https://baum1231234.github.io/mc-stats/" target="_blank" rel="noopener">KBK-Server-Statistik</a>, wird alle paar Minuten aktualisiert.</p>
+    <div class="map-info" id="map-info">Tippe auf eine Markierung, um mehr zu sehen.</div>
+
+    <div class="map-edit" id="map-edit" hidden>
+      <h3>Bearbeitungsmodus</h3>
+      <p class="map-hint" id="map-hint">Wähle „Punkt setzen“ oder „Weg zeichnen“ und klicke auf die Karte. Die Koordinaten kannst du danach in der Liste genau eintippen.</p>
+      <div class="map-tools">
+        <button class="btn" type="button" id="me-point">Punkt setzen</button>
+        <button class="btn" type="button" id="me-way">Weg zeichnen</button>
+        <button class="btn" type="button" id="me-done" hidden>Weg fertig</button>
+      </div>
+      <ul class="me-list" id="me-list"></ul>
+      <div class="me-export">
+        <button class="btn btn--big" type="button" id="me-copy">Code kopieren</button>
+        <button class="me-discard" type="button" id="me-discard">Entwurf verwerfen</button>
+      </div>
+      <textarea class="me-code" id="me-code" rows="6" readonly aria-label="Kartendaten zum Einfügen"></textarea>
+      <p class="map-hint">So kommt es auf die Seite: index.html auf GitHub öffnen, auf den Stift klicken, nach <b>KARTE-DATEN</b> suchen und den Text zwischen <b>[</b> und <b>]</b> durch den kopierten Code ersetzen. Dann „Commit changes“.</p>
+    </div>
+  </section>
+
+  <!-- KARTE-DATEN: Hier stehen die Projekte der Karte. Im Bearbeitungsmodus (Adresse mit #karte-bearbeiten) erzeugen und hier einfügen. -->
+  <script type="application/json" id="karte-daten">
+[
+  {"name": "Weg vom Bauernhof nach Cyclopic", "typ": "weg", "punkte": [[821, -1511], [170, -559]], "beschreibung": "Unser Holzweg mit Brücken über die Schluchten.", "projekt": 1},
+  {"name": "Bauernhof", "typ": "punkt", "punkte": [[821, -1511]], "beschreibung": "Startpunkt des Weges (Y 136).", "projekt": 1},
+  {"name": "Cyclopic", "typ": "punkt", "punkte": [[170, -559]], "beschreibung": "Ziel des Weges.", "projekt": 1},
+  {"name": "Tunnel zur Guardian Farm", "typ": "weg", "punkte": [[-5584, 772], [-5497, 772]], "beschreibung": "Gerader Tunnel mit innovativer Riptide-Technologie.", "projekt": 2}
+]
+  </script>
 
   <section class="slot" id="reisen">
     <span class="slot-label">WELTWEIT IM EINSATZ</span>
@@ -1743,6 +1840,279 @@ window.fcSend = function (form, btn, err, onOk) {
     renderList(); window.fcSound('tick');
   });
   renderList();
+})();
+</script>
+<script>
+(function () {
+  var cv = document.getElementById('map'); if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var EDIT = location.hash === '#karte-bearbeiten';
+  var data = [];
+  try { data = JSON.parse(document.getElementById('karte-daten').textContent) || []; } catch (e) { data = []; }
+  if (EDIT) { try { var d = JSON.parse(localStorage.getItem('fc-karte-entwurf') || 'null'); if (d) data = d; } catch (e) {} }
+
+  var view = { cx: 0, cz: 0, s: 1 }, sel = -1, mode = null, wayPts = null, W = 0, H = 0, dpr = 1;
+
+  // Echtes Gelände vom KBK-Server: die Region-Kacheln (je 512 × 512 Blöcke) von der Stats-Seite,
+  // die alle paar Minuten neu gerendert werden. Ohne Verbindung bleibt das Pergament.
+  var TILE_SRC = 'https://baum1231234.github.io/mc-stats/', tiles = null, imgs = {};
+  function loadTiles() {
+    fetch(TILE_SRC + 'data/stats.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { tiles = d && d.tiles && d.tiles.regions ? d.tiles : null; draw(); })
+      .catch(function () {});
+  }
+  function tileImg(key, info) {
+    var k = key + '|' + info.rendered;
+    if (!imgs[k]) {
+      var im = new Image(); im.crossOrigin = 'anonymous'; im.decoding = 'async';
+      im.onload = function () { im.ready = true; draw(); };
+      im.src = TILE_SRC + tiles.dir + '/r.' + key + '.png?t=' + encodeURIComponent(info.rendered);
+      imgs[k] = im;
+    }
+    return imgs[k];
+  }
+  function sx(x) { return W / 2 + (x - view.cx) * view.s; }
+  function sz(z) { return H / 2 + (z - view.cz) * view.s; }
+  function wx(px) { return view.cx + (px - W / 2) / view.s; }
+  function wz(py) { return view.cz + (py - H / 2) / view.s; }
+  function isDark() { return document.documentElement.classList.contains('dark'); }
+
+  function fit() {
+    var xs = [0], zs = [0];
+    data.forEach(function (e) { (e.punkte || []).forEach(function (p) { xs.push(p[0]); zs.push(p[1]); }); });
+    var x0 = Math.min.apply(0, xs), x1 = Math.max.apply(0, xs), z0 = Math.min.apply(0, zs), z1 = Math.max.apply(0, zs);
+    var spanX = Math.max(700, (x1 - x0) * 1.7), spanZ = Math.max(450, (z1 - z0) * 1.6);
+    view.cx = (x0 + x1) / 2; view.cz = (z0 + z1) / 2; view.s = Math.min(W / spanX, H / spanZ);
+  }
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = Math.max(240, Math.round(W * .56));
+    cv.style.height = H + 'px'; cv.width = W * dpr; cv.height = H * dpr;
+  }
+
+  // Pergament-Hintergrund wie eine Minecraft-Karte (fest gemustert, bewegt sich mit)
+  function rand(i, j) { var n = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return n - Math.floor(n); }
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
+    var night = isDark();
+    var cell = 8, ox = ((-view.cx * view.s + W / 2) % cell + cell) % cell, oz = ((-view.cz * view.s + H / 2) % cell + cell) % cell;
+    var baseCols = night ? ['#4B4232', '#463E2F', '#504636', '#423A2C'] : ['#E2CB95', '#DBC28A', '#E8D3A2', '#D4BA80'];
+    for (var y = -cell; y < H + cell; y += cell) for (var x = -cell; x < W + cell; x += cell) {
+      var gi = Math.floor((x - ox) / cell + view.cx * view.s / cell), gj = Math.floor((y - oz) / cell + view.cz * view.s / cell);
+      ctx.fillStyle = baseCols[Math.floor(rand(gi, gj) * 4)]; ctx.fillRect(x + ox, y + oz, cell, cell);
+    }
+    // Gelände-Kacheln
+    if (tiles) {
+      Object.keys(tiles.regions).forEach(function (key) {
+        var info = tiles.regions[key]; if (info.empty) return;
+        var rc = key.split('.'), rx = +rc[0], rz = +rc[1];
+        var x0 = sx(rx * 512), z0 = sz(rz * 512), sz512 = 512 * view.s;
+        if (x0 + sz512 < 0 || x0 > W || z0 + sz512 < 0 || z0 > H) return;
+        var im = tileImg(key, info);
+        if (im.ready) {
+          ctx.drawImage(im, Math.floor(x0), Math.floor(z0), Math.ceil(sz512) + 1, Math.ceil(sz512) + 1);
+          if (night) { ctx.fillStyle = 'rgba(8,10,40,.45)'; ctx.fillRect(Math.floor(x0), Math.floor(z0), Math.ceil(sz512) + 1, Math.ceil(sz512) + 1); }
+        }
+      });
+    }
+    // Raster
+    var steps = [50, 100, 200, 500, 1000, 2000, 5000], step = steps[steps.length - 1];
+    for (var i = 0; i < steps.length; i++) if (steps[i] * view.s >= 70) { step = steps[i]; break; }
+    ctx.fillStyle = night ? 'rgba(255,240,200,.12)' : 'rgba(90,60,30,.22)';
+    ctx.font = '9px "Press Start 2P", monospace'; ctx.textBaseline = 'top';
+    function tick(t, x, y) {
+      ctx.save();
+      if (tiles) { var tw = ctx.measureText(t).width; ctx.fillStyle = 'rgba(30,27,22,.7)'; ctx.fillRect(x - 3, y - 3, tw + 6, 15); ctx.fillStyle = '#FFFFFF'; }
+      else ctx.fillStyle = night ? 'rgba(255,240,200,.55)' : 'rgba(70,45,20,.7)';
+      ctx.fillText(t, x, y); ctx.restore();
+    }
+    ctx.fillStyle = tiles ? 'rgba(30,27,22,.25)' : (night ? 'rgba(255,240,200,.12)' : 'rgba(90,60,30,.22)');
+    for (var gx = Math.ceil(wx(0) / step) * step; gx <= wx(W); gx += step) {
+      var px = Math.round(sx(gx)); ctx.fillRect(px, 0, 2, H);
+      tick('X ' + gx, px + 4, 6);
+    }
+    for (var gz = Math.ceil(wz(0) / step) * step; gz <= wz(H); gz += step) {
+      var pz = Math.round(sz(gz)); ctx.fillRect(0, pz, W, 2);
+      tick('Z ' + gz, 6, pz + 4);
+    }
+    // Spawn
+    var spx = sx(0), spz = sz(0);
+    ctx.fillStyle = '#1E1B16'; ctx.fillRect(spx - 7, spz - 2, 14, 4); ctx.fillRect(spx - 2, spz - 7, 4, 14);
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(spx - 5, spz - 1, 10, 2); ctx.fillRect(spx - 1, spz - 5, 2, 10);
+    label('Spawn', spx, spz + 12, false, true);
+
+    // Wege zuerst, dann Punkte
+    data.forEach(function (e, k) { if (e.typ === 'weg' && (e.punkte || []).length > 1) drawWay(e.punkte, k === sel); });
+    if (wayPts && wayPts.length) drawWay(wayPts, true);
+    data.forEach(function (e, k) {
+      var p = e.punkte || []; if (!p.length) return;
+      if (e.typ === 'weg') { endCap(p[0]); endCap(p[p.length - 1]); var m = p[Math.floor((p.length - 1) / 2)], n = p[Math.ceil((p.length - 1) / 2)]; label(e.name, sx((m[0] + n[0]) / 2), sz((m[1] + n[1]) / 2) - 14, k === sel); }
+      else { pin(sx(p[0][0]), sz(p[0][1]), k === sel); label(e.name, sx(p[0][0]), sz(p[0][1]) - 30, k === sel); }
+    });
+    // Kompass
+    var cxp = W - 30, cyp = H - 34;
+    ctx.fillStyle = 'rgba(30,27,22,.75)'; ctx.fillRect(cxp - 14, cyp - 16, 28, 32);
+    ctx.fillStyle = '#E5332A'; ctx.fillRect(cxp - 2, cyp - 12, 4, 10); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(cxp - 2, cyp - 2, 4, 10);
+    ctx.fillStyle = '#FFFFFF'; ctx.font = '8px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.fillText('N', cxp, cyp - 28 + 2); ctx.textAlign = 'left';
+  }
+  function drawWay(pts, hi) {
+    ctx.lineJoin = 'round'; ctx.lineCap = 'square';
+    ctx.beginPath(); pts.forEach(function (p, i) { var a = sx(p[0]), b = sz(p[1]); if (i) ctx.lineTo(a, b); else ctx.moveTo(a, b); });
+    ctx.strokeStyle = '#1E1B16'; ctx.lineWidth = hi ? 10 : 8; ctx.setLineDash([]); ctx.stroke();
+    ctx.strokeStyle = hi ? '#FFD23F' : '#E08A2E'; ctx.lineWidth = hi ? 5 : 4; ctx.setLineDash([10, 6]); ctx.stroke(); ctx.setLineDash([]);
+  }
+  function endCap(p) { var a = Math.round(sx(p[0])), b = Math.round(sz(p[1])); ctx.fillStyle = '#1E1B16'; ctx.fillRect(a - 6, b - 6, 12, 12); ctx.fillStyle = '#E08A2E'; ctx.fillRect(a - 4, b - 4, 8, 8); }
+  function pin(a, b, hi) {
+    a = Math.round(a); b = Math.round(b);
+    ctx.fillStyle = '#1E1B16'; ctx.fillRect(a - 2, b - 26, 4, 26); ctx.fillRect(a - 1, b - 28, 18, 14);
+    ctx.fillStyle = hi ? '#FFD23F' : '#E5332A'; ctx.fillRect(a + 1, b - 26, 14, 10);
+    ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(a + 1, b - 26, 14, 3);
+    ctx.fillStyle = '#9C7442'; ctx.fillRect(a - 1, b - 14, 2, 14);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(a - 5, b - 1, 10, 3);
+  }
+  function label(txt, a, b, hi, small) {
+    if (!txt) return;
+    ctx.font = (small ? 8 : 9) + 'px "Press Start 2P", monospace';
+    var tw = ctx.measureText(txt).width, pad = 5, x0 = Math.round(a - tw / 2 - pad), y0 = Math.round(b - 10);
+    ctx.fillStyle = hi ? 'rgba(30,27,22,.95)' : 'rgba(30,27,22,.78)'; ctx.fillRect(x0, y0, tw + pad * 2, 18);
+    ctx.fillStyle = hi ? '#FFD23F' : '#FFFFFF'; ctx.textBaseline = 'middle'; ctx.fillText(txt, x0 + pad, y0 + 10); ctx.textBaseline = 'top';
+  }
+
+  // Treffer suchen
+  function hit(px, py) {
+    var best = -1, bd = 1e9;
+    data.forEach(function (e, k) {
+      var p = e.punkte || [];
+      if (e.typ === 'weg') {
+        for (var i = 1; i < p.length; i++) { var d = segDist(px, py, sx(p[i-1][0]), sz(p[i-1][1]), sx(p[i][0]), sz(p[i][1])); if (d < 10 && d < bd) { bd = d; best = k; } }
+      } else if (p.length) {
+        var dx = px - sx(p[0][0]), dy = py - (sz(p[0][1]) - 14), d2 = Math.sqrt(dx * dx + dy * dy); if (d2 < 20 && d2 < bd) { bd = d2; best = k; }
+      }
+    });
+    return best;
+  }
+  function segDist(px, py, ax, ay, bx, by) {
+    var vx = bx - ax, vy = by - ay, l = vx * vx + vy * vy, t = l ? Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / l)) : 0;
+    var qx = ax + t * vx - px, qy = ay + t * vy - py; return Math.sqrt(qx * qx + qy * qy);
+  }
+
+  var info = document.getElementById('map-info');
+  function showInfo() {
+    var e = data[sel];
+    if (!e) { info.textContent = data.length ? 'Tippe auf eine Markierung, um mehr zu sehen.' : 'Noch keine Projekte auf der Karte eingetragen.'; return; }
+    var p = e.punkte || [], c = e.typ === 'weg'
+      ? 'Von X ' + p[0][0] + ' / Z ' + p[0][1] + ' bis X ' + p[p.length - 1][0] + ' / Z ' + p[p.length - 1][1]
+      : 'X ' + p[0][0] + ' / Z ' + p[0][1];
+    info.innerHTML = '<b></b><span class="mi-coords"></span><span class="mi-desc"></span>';
+    info.querySelector('b').textContent = e.name || 'Ohne Namen';
+    info.querySelector('.mi-coords').textContent = c;
+    info.querySelector('.mi-desc').textContent = e.beschreibung || '';
+    var projs = document.querySelectorAll('.project');
+    if (e.projekt && projs[e.projekt - 1]) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = 'Zum Projekt';
+      b.addEventListener('click', function () { projs[e.projekt - 1].scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      info.appendChild(document.createElement('br')); info.appendChild(b);
+    }
+  }
+
+  // Ziehen zum Verschieben, Klick zum Auswählen/Setzen
+  var down = null, coords = document.getElementById('map-coords');
+  function local(e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  cv.addEventListener('pointerdown', function (e) { var p = local(e); down = { x: p.x, y: p.y, cx: view.cx, cz: view.cz, moved: false }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', function (e) {
+    var p = local(e);
+    if (e.pointerType === 'mouse') coords.textContent = 'X ' + Math.round(wx(p.x)) + '  Z ' + Math.round(wz(p.y));
+    if (!down) return;
+    if (Math.abs(p.x - down.x) + Math.abs(p.y - down.y) > 5) { down.moved = true; cv.classList.add('grabbing'); }
+    if (down.moved) { view.cx = down.cx - (p.x - down.x) / view.s; view.cz = down.cz - (p.y - down.y) / view.s; draw(); }
+  });
+  cv.addEventListener('pointerleave', function () { coords.textContent = ''; });
+  cv.addEventListener('pointerup', function (e) {
+    var p = local(e), d = down; down = null; cv.classList.remove('grabbing');
+    if (!d || d.moved) return;
+    var X = Math.round(wx(p.x)), Z = Math.round(wz(p.y));
+    if (EDIT && mode === 'punkt') { data.push({ name: 'Neues Projekt', typ: 'punkt', punkte: [[X, Z]], beschreibung: '', projekt: 0 }); sel = data.length - 1; setMode(null); changed(); return; }
+    if (EDIT && mode === 'weg') { wayPts.push([X, Z]); draw(); hint(); return; }
+    sel = hit(p.x, p.y); if (window.fcSound && sel >= 0) window.fcSound('tick'); showInfo(); draw(); if (EDIT) renderList();
+  });
+  function zoom(f) { view.s = Math.max(.02, Math.min(20, view.s * f)); draw(); }
+  document.getElementById('map-in').addEventListener('click', function () { zoom(1.5); });
+  document.getElementById('map-out').addEventListener('click', function () { zoom(1 / 1.5); });
+  document.getElementById('map-fit').addEventListener('click', function () { fit(); draw(); });
+
+  // ---------- Bearbeitungsmodus ----------
+  var box = document.getElementById('map-edit');
+  function save() { try { localStorage.setItem('fc-karte-entwurf', JSON.stringify(data)); } catch (e) {} }
+  function code() {
+    return '[\n' + data.map(function (e) {
+      return '  ' + JSON.stringify({ name: e.name, typ: e.typ, punkte: e.punkte, beschreibung: e.beschreibung || '', projekt: +e.projekt || 0 });
+    }).join(',\n') + '\n]';
+  }
+  function changed() { save(); draw(); showInfo(); renderList(); }
+  function hint() {
+    var h = document.getElementById('map-hint');
+    if (mode === 'punkt') h.textContent = 'Klicke auf die Stelle der Karte, an der das Projekt liegt.';
+    else if (mode === 'weg') h.textContent = 'Klicke nacheinander die Punkte des Weges an (' + wayPts.length + ' gesetzt). Dann „Weg fertig“.';
+    else h.textContent = 'Wähle „Punkt setzen“ oder „Weg zeichnen“ und klicke auf die Karte. Die Koordinaten kannst du danach in der Liste genau eintippen.';
+  }
+  function setMode(m) {
+    if (mode === 'weg' && m !== 'weg' && wayPts && wayPts.length > 1) { data.push({ name: 'Neuer Weg', typ: 'weg', punkte: wayPts, beschreibung: '', projekt: 0 }); sel = data.length - 1; }
+    mode = m; wayPts = m === 'weg' ? [] : null;
+    document.getElementById('me-point').classList.toggle('active', m === 'punkt');
+    document.getElementById('me-way').classList.toggle('active', m === 'weg');
+    document.getElementById('me-done').hidden = m !== 'weg';
+    cv.classList.toggle('adding', !!m); hint(); changed();
+  }
+  function renderList() {
+    if (!EDIT) return;
+    var ul = document.getElementById('me-list'); ul.innerHTML = '';
+    data.forEach(function (e, k) {
+      var li = document.createElement('li'); if (k === sel) li.className = 'me-sel';
+      var pts = e.punkte.map(function (p, i) {
+        return '<label>' + (e.typ === 'weg' ? 'P' + (i + 1) + ' ' : '') + 'X <input class="c" type="number" data-i="' + i + '" data-a="0" value="' + p[0] + '"></label>' +
+               '<label>Z <input class="c" type="number" data-i="' + i + '" data-a="1" value="' + p[1] + '"></label>';
+      }).join('');
+      li.innerHTML = '<div class="me-row"><input class="n" type="text" aria-label="Name"><label>Projekt-Nr. <input class="p" type="number" min="0" aria-label="Projekt-Nummer"></label><button class="me-del" type="button">Löschen</button></div>' +
+        '<div class="me-row">' + pts + '</div><textarea rows="2" placeholder="Beschreibung (optional)" aria-label="Beschreibung"></textarea>';
+      li.querySelector('.n').value = e.name; li.querySelector('.p').value = e.projekt || 0; li.querySelector('textarea').value = e.beschreibung || '';
+      li.querySelector('.n').addEventListener('input', function () { e.name = this.value; save(); draw(); showInfo(); out(); });
+      li.querySelector('.p').addEventListener('input', function () { e.projekt = +this.value || 0; save(); out(); });
+      li.querySelector('textarea').addEventListener('input', function () { e.beschreibung = this.value; save(); showInfo(); out(); });
+      li.querySelectorAll('input.c').forEach(function (inp) { inp.addEventListener('input', function () { e.punkte[+this.dataset.i][+this.dataset.a] = Math.round(+this.value || 0); save(); draw(); showInfo(); out(); }); });
+      li.querySelector('.me-del').addEventListener('click', function () { data.splice(k, 1); sel = -1; changed(); });
+      li.addEventListener('focusin', function () { if (sel !== k) { sel = k; draw(); showInfo(); } });
+      ul.appendChild(li);
+    });
+    out();
+  }
+  function out() { document.getElementById('me-code').value = code(); }
+  if (EDIT) {
+    box.hidden = false;
+    document.getElementById('me-point').addEventListener('click', function () { setMode(mode === 'punkt' ? null : 'punkt'); });
+    document.getElementById('me-way').addEventListener('click', function () { setMode(mode === 'weg' ? null : 'weg'); });
+    document.getElementById('me-done').addEventListener('click', function () { setMode(null); });
+    document.getElementById('me-copy').addEventListener('click', function () {
+      var ta = document.getElementById('me-code'), b = this;
+      function ok() { b.textContent = 'Kopiert!'; setTimeout(function () { b.textContent = 'Code kopieren'; }, 1600); }
+      try { navigator.clipboard.writeText(ta.value).then(ok, function () { ta.select(); }); } catch (e) { ta.select(); }
+    });
+    var disc = document.getElementById('me-discard');
+    disc.addEventListener('click', function () {
+      if (disc.dataset.c !== '1') { disc.dataset.c = '1'; disc.textContent = 'Wirklich verwerfen? Nochmal klicken'; setTimeout(function () { disc.dataset.c = ''; disc.textContent = 'Entwurf verwerfen'; }, 3500); return; }
+      try { localStorage.removeItem('fc-karte-entwurf'); } catch (e) {}
+      try { data = JSON.parse(document.getElementById('karte-daten').textContent) || []; } catch (e) { data = []; }
+      disc.dataset.c = ''; disc.textContent = 'Entwurf verworfen'; sel = -1; fit(); changed();
+    });
+  }
+
+  function init() { resize(); fit(); draw(); showInfo(); renderList(); }
+  init();
+  loadTiles(); setInterval(loadTiles, 5 * 60 * 1000);
+  window.addEventListener('resize', function () { var c = { cx: view.cx, cz: view.cz }, oldW = W; resize(); view.s *= W / (oldW || W); view.cx = c.cx; view.cz = c.cz; draw(); });
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  if (EDIT) setTimeout(function () { document.getElementById('karte').scrollIntoView(); }, 300);
 })();
 </script>
 <script>
