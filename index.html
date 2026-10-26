@@ -28,6 +28,8 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+/* iPhone: kein Zoom durch schnelles Doppeltippen (Zwei-Finger-Zoom bleibt möglich) */
+html, body, button, a, input, textarea, label, dialog, .car-btn, .map-btn { touch-action: manipulation; }
 body {
   background: linear-gradient(to bottom,
     var(--sky-1) 0 30%, var(--sky-2) 30% 62%, var(--sky-3) 62% 100%) fixed, var(--sky-1);
@@ -627,6 +629,18 @@ html.dark .me-discard { color: #A9A08C; }
 .map-home.spin i { animation: home-hop .5s steps(5); }
 @keyframes home-hop { 0% { transform: translateY(0) scale(1); } 30% { transform: translateY(-5px) scale(1.15); } 60% { transform: translateY(1px) scale(.95); } 100% { transform: none; } }
 @media (max-width: 560px) { .map-home i { width: 17px; height: 17px; } }
+.map-ui-l { position: absolute; left: 10px; top: 10px; }
+.map-big i { display: block; width: 18px; height: 18px; margin: auto; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%209%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%220%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%220%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%228%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%228%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%226%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3C%2Fsvg%3E") center / contain no-repeat; image-rendering: pixelated; filter: drop-shadow(2px 2px 0 #1E1B16); }
+.map-big.is-big i { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%209%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%220%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23F4EEDC%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%223%22%20fill%3D%22%23F4EEDC%22%2F%3E%3C%2Fsvg%3E"); }
+.map-big:active i { transform: scale(.85); }
+@media (max-width: 560px) { .map-big i { width: 15px; height: 15px; } }
+.map-lb[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
+.map-lb-stage { min-height: 0; padding: 0 max(16px, env(safe-area-inset-left, 0px)); display: grid; }
+.map-lb .map-wrap { height: 100%; min-height: 0; overflow: hidden; }
+.map-lb .map-info { margin: 10px max(16px, env(safe-area-inset-left, 0px)); margin-bottom: max(14px, env(safe-area-inset-bottom, 0px)); color: var(--paper); background: rgba(255,255,255,.06); border-color: #6E4E26; min-height: 0; }
+.map-lb .map-info .mi-coords { color: #A9A08C; }
+.map-lb-title { font-family: var(--f-pixel); font-size: 11px; }
+
 </style>
 </head>
 <body>
@@ -709,8 +723,10 @@ try { if (localStorage.getItem('fc-dark') === '1') document.documentElement.clas
         <button class="map-btn" type="button" id="map-out" aria-label="Herauszoomen">−</button>
         <button class="map-btn map-home" type="button" id="map-fit" aria-label="Alles zeigen" title="Alles zeigen"><i></i></button>
       </div>
+      <div class="map-ui-l"><button class="map-btn map-big" type="button" id="map-big" aria-label="Karte groß anzeigen" title="Karte groß anzeigen"><i></i></button></div>
       <span class="map-coords" id="map-coords"></span>
     </div>
+    <span id="map-info-anchor" hidden></span>
     <p class="map-src">Gelände live von der <a href="https://baum1231234.github.io/mc-stats/" target="_blank" rel="noopener">KBK-Server-Statistik</a>, wird alle paar Minuten aktualisiert.</p>
     <div class="map-info" id="map-info">Tippe auf eine Markierung, um mehr zu sehen.</div>
 
@@ -893,6 +909,14 @@ try { if (localStorage.getItem('fc-dark') === '1') document.documentElement.clas
     <button class="car-btn car-next" type="button" id="lb-next" aria-label="Nächstes Bild"><span class="parrow"></span></button>
   </div>
   <p class="lb-cap" id="lb-cap"></p>
+</dialog>
+
+<dialog class="lb map-lb" id="map-lb" aria-label="Karte in groß">
+  <div class="lb-top">
+    <span class="map-lb-title">PROJEKTKARTE</span>
+    <button class="x" type="button" id="map-lb-close" aria-label="Großansicht schließen">X</button>
+  </div>
+  <div class="map-lb-stage" id="map-lb-stage"></div>
 </dialog>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -1751,7 +1775,11 @@ window.fcSend = function (form, btn, err, onOk) {
     // Figur drehen: leises Einrasten
     ratchet: function () { var k = 1 + (Math.random() - .5) * .2; tone('triangle', 420 * k, 300 * k, 0, .035, .07, .002); },
     // Knöpfe: weicher Stein-Klick wie im Minecraft-Menü
-    btn: function () { tone('sine', 1150, 900, 0, .06, .12, .002); tone('sine', 420, 0, 0, .05, .08, .002); noise(0, .025, .08, 5000, 2000); }
+    btn: function () { tone('sine', 1150, 900, 0, .06, .12, .002); tone('sine', 420, 0, 0, .05, .08, .002); noise(0, .025, .08, 5000, 2000); },
+    // Karte: Plus = zwei aufsteigende Blubb-Töne, Minus = zwei absteigende, Haus = federndes Hüpfen + kleines Heimat-Glöckchen
+    zoomIn: function () { tone('sine', 520, 780, 0, .07, .14, .003); tone('sine', 780, 1170, .06, .09, .13, .003); noise(0, .02, .05, 5000, 2500); },
+    zoomOut: function () { tone('sine', 1170, 780, 0, .07, .13, .003); tone('sine', 780, 470, .06, .1, .14, .003); noise(0, .02, .05, 3000, 1500); },
+    home: function () { tone('triangle', 260, 620, 0, .12, .16, .004); tone('triangle', 620, 330, .12, .1, .1, .004); [784, 1175].forEach(function (f, i) { tone('sine', f, 0, .2 + i * .1, .45, .1, .006); }); }
   };
   window.fcSound = function (name) { if (muted || !SOUNDS[name]) return; try { SOUNDS[name](); } catch (e) {} };
 
@@ -1887,6 +1915,7 @@ window.fcSend = function (form, btn, err, onOk) {
   function wz(py) { return view.cz + (py - H / 2) / view.s; }
   function isDark() { return document.documentElement.classList.contains('dark'); }
 
+  var big = false;
   function fit() { var t = fitTarget(); view.cx = t.cx; view.cz = t.cz; view.s = t.s; }
   function fitTarget() {
     var xs = [0], zs = [0];
@@ -1897,7 +1926,9 @@ window.fcSend = function (form, btn, err, onOk) {
   }
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = cv.clientWidth; H = W < 560 ? Math.round(W * .9) : Math.max(240, Math.round(W * .56));
+    W = cv.clientWidth;
+    if (big) H = Math.max(200, cv.parentNode.clientHeight);
+    else H = W < 560 ? Math.round(W * .9) : Math.max(240, Math.round(W * .56));
     cv.style.height = H + 'px'; cv.width = W * dpr; cv.height = H * dpr;
   }
 
@@ -2168,12 +2199,42 @@ window.fcSend = function (form, btn, err, onOk) {
     })(t0);
   }
   function zoom(f) { flyTo({ cx: view.cx, cz: view.cz, s: Math.max(.02, Math.min(20, view.s * f)) }, 250); }
-  document.getElementById('map-in').addEventListener('click', function () { zoom(1.5); });
-  document.getElementById('map-out').addEventListener('click', function () { zoom(1 / 1.5); });
+  document.getElementById('map-in').addEventListener('click', function () { if (window.fcSound) window.fcSound('zoomIn'); zoom(1.5); });
+  document.getElementById('map-out').addEventListener('click', function () { if (window.fcSound) window.fcSound('zoomOut'); zoom(1 / 1.5); });
   document.getElementById('map-fit').addEventListener('click', function () {
+    if (window.fcSound) window.fcSound('home');
     var b = this; b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin');
     sel = -1; showInfo(); flyTo(fitTarget(), 800);
   });
+
+  // ---------- Große Ansicht (wie die Bilder) ----------
+  var mlb = document.getElementById('map-lb'), mStage = document.getElementById('map-lb-stage');
+  var wrap = cv.parentNode, wrapHome = wrap.parentNode, info = document.getElementById('map-info'), bigBtn = document.getElementById('map-big');
+  function relayout() {
+    var oW = W, oH = H; cv.style.height = '';
+    resize();
+    view.s *= Math.min(W / (oW || W), H / (oH || H));
+    draw();
+  }
+  function setBig(on) {
+    if (on === big) return;
+    big = on;
+    bigBtn.classList.toggle('is-big', on);
+    bigBtn.setAttribute('aria-label', on ? 'Große Ansicht schließen' : 'Karte groß anzeigen'); bigBtn.title = bigBtn.getAttribute('aria-label');
+    if (on) {
+      mStage.appendChild(wrap); mlb.appendChild(info);
+      if (mlb.showModal) mlb.showModal(); else mlb.setAttribute('open', '');
+      if (window.fcSound) window.fcSound('whoosh');
+    } else {
+      wrapHome.insertBefore(wrap, document.getElementById('map-info-anchor'));
+      var src = wrapHome.querySelector('.map-src'); wrapHome.insertBefore(info, src.nextSibling);
+      if (mlb.open) { if (mlb.close) mlb.close(); else mlb.removeAttribute('open'); }
+    }
+    requestAnimationFrame(relayout);
+  }
+  bigBtn.addEventListener('click', function () { setBig(!big); });
+  document.getElementById('map-lb-close').addEventListener('click', function () { setBig(false); });
+  mlb.addEventListener('close', function () { if (big) { setBig(false); } if (window.fcSound) window.fcSound('whooshOut'); });
 
   // ---------- Bearbeitungsmodus ----------
   var box = document.getElementById('map-edit');
