@@ -2170,16 +2170,54 @@ window.fcSend = function (form, btn, err, onOk) {
   // Ziehen zum Verschieben, Klick zum Auswählen/Setzen
   var down = null, coords = document.getElementById('map-coords');
   function local(e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
-  cv.addEventListener('pointerdown', function (e) { var p = local(e); down = { x: p.x, y: p.y, cx: view.cx, cz: view.cz, moved: false }; cv.setPointerCapture(e.pointerId); });
+  // Zwei Finger: Zoomen wie gewohnt (Pinch), dabei mitverschieben
+  var touches = {}, pinch = null;
+  function tlist() { return Object.keys(touches).map(function (k) { return touches[k]; }); }
+  function startPinch() {
+    var t = tlist(); if (t.length < 2) { pinch = null; return; }
+    var mx = (t[0].x + t[1].x) / 2, my = (t[0].y + t[1].y) / 2;
+    pinch = { d: Math.max(10, Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y)), s: view.s, wx: wx(mx), wz: wz(my) };
+    if (anim) { cancelAnimationFrame(anim); anim = null; }
+    if (down) down.moved = true;
+  }
+  cv.addEventListener('pointerdown', function (e) {
+    var p = local(e);
+    if (e.pointerType !== 'mouse') { touches[e.pointerId] = p; if (tlist().length >= 2) { startPinch(); cv.setPointerCapture(e.pointerId); return; } }
+    down = { x: p.x, y: p.y, cx: view.cx, cz: view.cz, moved: false }; cv.setPointerCapture(e.pointerId);
+  });
+  function endTouch(e) {
+    if (!(e.pointerId in touches)) return;
+    delete touches[e.pointerId];
+    if (pinch) {
+      pinch = null;
+      var t = tlist();
+      // übrig gebliebener Finger verschiebt weiter, ohne Sprung
+      if (t.length === 1) down = { x: t[0].x, y: t[0].y, cx: view.cx, cz: view.cz, moved: true }; else down = null;
+      if (t.length >= 2) startPinch();
+      return true;
+    }
+  }
+  cv.addEventListener('pointercancel', function (e) { endTouch(e); if (!tlist().length) { down = null; cv.classList.remove('grabbing'); } });
   cv.addEventListener('pointermove', function (e) {
     var p = local(e);
     if (e.pointerType === 'mouse') coords.textContent = 'X ' + Math.round(wx(p.x)) + '  Z ' + Math.round(wz(p.y));
+    if (e.pointerId in touches) touches[e.pointerId] = p;
+    if (pinch) {
+      var t = tlist(); if (t.length < 2) return;
+      var mx = (t[0].x + t[1].x) / 2, my = (t[0].y + t[1].y) / 2;
+      var d = Math.max(10, Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y));
+      view.s = Math.max(.02, Math.min(20, pinch.s * d / pinch.d));
+      view.cx = pinch.wx - (mx - W / 2) / view.s; view.cz = pinch.wz - (my - H / 2) / view.s;
+      draw(); return;
+    }
     if (!down) return;
     if (Math.abs(p.x - down.x) + Math.abs(p.y - down.y) > 5) { down.moved = true; cv.classList.add('grabbing'); }
     if (down.moved) { view.cx = down.cx - (p.x - down.x) / view.s; view.cz = down.cz - (p.y - down.y) / view.s; draw(); }
   });
   cv.addEventListener('pointerleave', function () { coords.textContent = ''; });
   cv.addEventListener('pointerup', function (e) {
+    if (endTouch(e)) { if (!tlist().length) cv.classList.remove('grabbing'); return; }
+    if (tlist().length) return;
     var p = local(e), d = down; down = null; cv.classList.remove('grabbing');
     if (!d || d.moved) return;
     var X = Math.round(wx(p.x)), Z = Math.round(wz(p.y));
